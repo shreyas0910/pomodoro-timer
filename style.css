@@ -1,0 +1,19 @@
+body{
+    font-family: Arial, Helvetica, sans-serif;
+}
+#timer{
+    font-size: 200px;
+    text-align: center;
+    margin-top: 100px;
+}
+#buttons{
+    text-align: center;
+    margin-top: 50px;
+}
+#buttons button {
+    font-size: 24px;
+    padding: 15px 30px;
+    margin: 0 10px;
+    cursor: pointer;
+    border-radius: 5px;
+}
