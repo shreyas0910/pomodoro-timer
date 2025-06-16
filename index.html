@@ -10,10 +10,18 @@
     <div id="timer">25:00</div>
     <div id="buttons">
         <button id="start" onclick="startTimer()">Start</button>
-        <button id="stop">Stop</button>
-        <button id="reset">Reset</button>
+        <button id="reset" onclick="resetTimer()">Reset</button>
+        <button onclick="setShortBreak()">Short Break</button>
+        <button onclick="setLongBreak()">Long Break</button>
     </div>
-    
+    <div id="gif-container">
+        <img src="https://tenor.com/view/seal-lock-the-fuck-in-seal-lock-in-gif-7949085471257086036.gif" alt="Locked In">
+    </div>
+    <div id="task-container">
+        <input type="text" id="task-input" placeholder="Enter your task">
+        <button onclick="addTask()">Add Task</button>
+        <ul id="task-list"></ul>
+    </div>
     <script src="index.js"></script>
 </body>
 </html>

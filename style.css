@@ -1,19 +1,125 @@
-body{
+body {
     font-family: Arial, Helvetica, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
 }
-#timer{
+
+#timer {
     font-size: 200px;
     text-align: center;
-    margin-top: 100px;
+    margin: 50px 0;
+    transition: opacity 0.5s ease-in-out;
 }
-#buttons{
+
+#buttons {
     text-align: center;
     margin-top: 50px;
 }
-#buttons button {
-    font-size: 24px;
-    padding: 15px 30px;
-    margin: 0 10px;
+
+button {
+    font-size: 16px;
+    padding: 12px 24px;
+    margin: 0 8px;
+    border: none;
+    border-radius: 6px;
     cursor: pointer;
-    border-radius: 5px;
+    background-color: #f0f0f0;
+    color: #2d2d2d;
+    transition: all 0.2s ease;
+}
+
+button:hover {
+    background-color: #d1d1d1;
+    transform: translateY(-2px);
+}
+
+
+
+#task-container {
+    width: 80%;
+    max-width: 600px;
+    margin: 20px auto 50px auto;
+    text-align: center;
+}
+
+#task-input {
+    padding: 10px;
+    width: 60%;
+    font-size: 16px;
+    margin-right: 10px;
+}
+
+#task-list {
+    list-style: none;
+    padding: 0;
+    text-align: left;
+    margin: 20px auto;
+}
+
+#task-list li {
+    padding: 15px;
+    margin: 8px 0;
+    background: #beb9b9;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 20px;
+}
+
+
+#gif-container {
+    text-align: center;
+    margin: 50px auto;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 300px;
+    z-index: 1000;
+}
+
+#gif-container img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+#task-container button {
+    font-size: 18px;
+    padding: 14px 28px;
+    background-color: #f0f0f0;
+}
+
+#task-container button:hover {
+    background-color: #d1d1d1;
+}
+
+
+.button-group {
+    display: flex;
+    gap: 8px;
+}
+
+.complete-btn {
+    background-color: #686565;
+    color: #2d2d2d;
+}
+
+.completed {
+    text-decoration: line-through;
+    color: #888;
+}
+
+#task-list li {
+    padding: 15px;
+    margin: 8px 0;
+    background: #d1cece;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
