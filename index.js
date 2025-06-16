@@ -4,24 +4,108 @@ let isRunning = false;
 let isBreakActive = false;
 
 const countdown = document.getElementById("timer");
+let player;
+let isYouTubeReady = false;
+const gifContainer = document.getElementById('gif-container');
+const timerSound = new Audio('./sounds/timer-end.mp3');
 
 function updateDisplay() {
-    let minutes = Math.floor(totalTime / 60);
+    let hours = Math.floor(totalTime / 3600);
+    let minutes = Math.floor((totalTime % 3600) / 60);
     let seconds = totalTime % 60;
+    
     seconds = seconds < 10 ? "0" + seconds : seconds;
     minutes = minutes < 10 ? "0" + minutes : minutes;
-    countdown.innerText = `${minutes}:${seconds}`;
+    hours = hours < 10 ? "0" + hours : hours;
+    
+    countdown.innerText = hours > 0 ? 
+        `${hours}:${minutes}:${seconds}` : 
+        `${minutes}:${seconds}`;
+}
+
+function setShortBreak() {
+    stopTimer();
+    updateDisplay();
+    
+    // Show first GIF (Locked In)
+    document.querySelector('#gif-container img:first-child').style.display = 'block';
+    document.querySelector('#gif-container img:last-child').style.display = 'none';
+    document.getElementById('gif-container').style.opacity = '1';
+    document.getElementById('gif-container').style.display = 'block';
+}
+
+function setLongBreak() {
+    stopTimer();
+    updateDisplay();
+    
+    // Show first GIF (Locked In)
+    document.querySelector('#gif-container img:first-child').style.display = 'block';
+    document.querySelector('#gif-container img:last-child').style.display = 'none';
+    document.getElementById('gif-container').style.opacity = '1';
+    document.getElementById('gif-container').style.display = 'block';
+}
+
+function showEndGif() {
+    // Show second GIF (Timer Complete)
+    document.querySelector('#gif-container img:first-child').style.display = 'none';
+    document.querySelector('#gif-container img:last-child').style.display = 'block';
+    document.getElementById('gif-container').style.opacity = '1';
+    document.getElementById('gif-container').style.display = 'block';
+}
+
+function loadYouTubeAPI() {
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+}
+
+function onYouTubeIframeAPIReady() {
+    player = new YT.Player('youtube-player', {
+        height: '0',
+        width: '0',
+        videoId: '8UpGNI1zzAM',
+        playerVars: {
+            'autoplay': 0,
+            'controls': 0,
+            'disablekb': 1,
+            'fs': 0
+        },
+        events: {
+            'onReady': onPlayerReady,
+            'onStateChange': onPlayerStateChange
+        }
+    });
+}
+
+function onPlayerReady(event) {
+    isYouTubeReady = true;
+    // Preload the video
+    player.playVideo();
+    player.pauseVideo();
+    player.seekTo(0);
+}
+
+function onPlayerStateChange(event) {
+    if (event.data == YT.PlayerState.ENDED) {
+        player.seekTo(0);
+    }
 }
 
 function startTimer() {
     if (!isRunning) {
         isRunning = true;
+        if (totalTime <= 0) {
+            totalTime = 25 * 60;
+        }
         totalTime--; 
         updateDisplay(); 
         
         timerInterval = setInterval(() => {
             if (totalTime <= 0) {
                 stopTimer();
+                timerSound.play();
+                showEndGif();
                 return;
             }
             totalTime--;
@@ -48,25 +132,39 @@ function resetTimer() {
     stopTimer();
     totalTime = 25*60;
     countdown.innerText = "25:00";
-    isBreakActive = false;
-    
+    // Hide GIF container when resetting
     document.getElementById('gif-container').style.opacity = '0';
+    document.getElementById('gif-container').style.display = 'none';
 }
 
-function setShortBreak() {
-    stopTimer();
-    updateDisplay();
-    isBreakActive = true;
-    
-    document.getElementById('gif-container').style.opacity = '1';
+function addTimeControls() {
+    const controls = document.createElement('div');
+    controls.innerHTML = `
+        <div id="time-controls">
+            <input type="number" id="hours-input" min="0" max="24" value="0">
+            <label for="hours-input">hours</label>
+            <input type="number" id="minutes-input" min="0" max="59" value="25">
+            <label for="minutes-input">minutes</label>
+            <input type="number" id="seconds-input" min="0" max="59" value="0">
+            <label for="seconds-input">seconds</label>
+            <button onclick="setCustomTime()">Set Time</button>
+        </div>
+    `;
+    document.getElementById('timer').insertAdjacentElement('afterend', controls);
 }
 
-function setLongBreak() {
-    stopTimer();
-    updateDisplay();
-    isBreakActive = true;
+function setCustomTime() {
+    const hours = parseInt(document.getElementById('hours-input').value) || 0;
+    const minutes = parseInt(document.getElementById('minutes-input').value) || 0;
+    const seconds = parseInt(document.getElementById('seconds-input').value) || 0;
     
-    document.getElementById('gif-container').style.opacity = '1';
+    const totalSeconds = (hours * 3600) + (minutes * 60) + seconds;
+    
+    if (totalSeconds > 0) {
+        stopTimer();
+        totalTime = totalSeconds;
+        updateDisplay();
+    }
 }
 
 let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
@@ -100,15 +198,21 @@ function updateTaskList() {
     const taskList = document.getElementById('task-list');
     taskList.innerHTML = '';
     
-    tasks.forEach((task, index) => {
+    // Sort tasks: incomplete first, then completed
+    const sortedTasks = [...tasks].sort((a, b) => {
+        if (a.completed === b.completed) return 0;
+        return a.completed ? 1 : -1;
+    });
+    
+    sortedTasks.forEach((task, index) => {
         const li = document.createElement('li');
         li.innerHTML = `
             <span class="${task.completed ? 'completed' : ''}">${task.text}</span>
             <div class="button-group">
-                <button class="complete-btn" onclick="toggleComplete(${index})">
+                <button class="complete-btn" onclick="toggleComplete(${tasks.indexOf(task)})">
                     ${task.completed ? 'Undo' : 'Complete'}
                 </button>
-                <button class="delete-btn" onclick="deleteTask(${index})">Delete</button>
+                <button class="delete-btn" onclick="deleteTask(${tasks.indexOf(task)})">Delete</button>
             </div>
         `;
         taskList.appendChild(li);
@@ -118,6 +222,8 @@ function updateTaskList() {
 
 document.addEventListener('DOMContentLoaded', () => {
     updateTaskList();
+    addTimeControls();
+    loadYouTubeAPI();
 });
 
 
