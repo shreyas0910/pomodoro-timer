@@ -1,32 +1,35 @@
-let totalTime = 25*60;
+let totalTime = 25 * 60;
 let timerInterval;
 let isRunning = false;
-let isBreakActive = false;
+let endTime = null;
 
 const countdown = document.getElementById("timer");
-let player;
-let isYouTubeReady = false;
 const gifContainer = document.getElementById('gif-container');
 const timerSound = new Audio('./sounds/timer-end.mp3');
 
 function updateDisplay() {
-    let hours = Math.floor(totalTime / 3600);
-    let minutes = Math.floor((totalTime % 3600) / 60);
-    let seconds = totalTime % 60;
-    
+    let displayTime = totalTime;
+    if (isRunning && endTime) {
+        const now = Date.now();
+        displayTime = Math.max(0, Math.round((endTime - now) / 1000));
+    }
+    let hours = Math.floor(displayTime / 3600);
+    let minutes = Math.floor((displayTime % 3600) / 60);
+    let seconds = displayTime % 60;
+
     seconds = seconds < 10 ? "0" + seconds : seconds;
     minutes = minutes < 10 ? "0" + minutes : minutes;
     hours = hours < 10 ? "0" + hours : hours;
-    
-    countdown.innerText = hours > 0 ? 
-        `${hours}:${minutes}:${seconds}` : 
+
+    countdown.innerText = hours > 0 ?
+        `${hours}:${minutes}:${seconds}` :
         `${minutes}:${seconds}`;
 }
 
 function setShortBreak() {
     stopTimer();
     updateDisplay();
-    
+
     // Show first GIF (Locked In)
     document.querySelector('#gif-container img:first-child').style.display = 'block';
     document.querySelector('#gif-container img:last-child').style.display = 'none';
@@ -37,7 +40,7 @@ function setShortBreak() {
 function setLongBreak() {
     stopTimer();
     updateDisplay();
-    
+
     // Show first GIF (Locked In)
     document.querySelector('#gif-container img:first-child').style.display = 'block';
     document.querySelector('#gif-container img:last-child').style.display = 'none';
@@ -95,23 +98,25 @@ function onPlayerStateChange(event) {
 function startTimer() {
     if (!isRunning) {
         isRunning = true;
-        if (totalTime <= 0) {
-            totalTime = 25 * 60;
-        }
-        totalTime--; 
-        updateDisplay(); 
-        
+        // Set the end time based on current time and totalTime
+        endTime = Date.now() + totalTime * 1000;
+        updateDisplay();
+
         timerInterval = setInterval(() => {
-            if (totalTime <= 0) {
+            const now = Date.now();
+            let remaining = Math.max(0, Math.round((endTime - now) / 1000));
+            if (remaining <= 0) {
                 stopTimer();
                 timerSound.play();
                 showEndGif();
+                totalTime = 0;
+                updateDisplay();
                 return;
             }
-            totalTime--;
+            totalTime = remaining;
             updateDisplay();
-        }, 1000);
-        
+        }, 250);
+
         const startButton = document.getElementById('start');
         startButton.innerText = 'Stop';
         startButton.onclick = stopTimer;
@@ -121,12 +126,13 @@ function startTimer() {
 function stopTimer() {
     isRunning = false;
     clearInterval(timerInterval);
-    
+    endTime = null;
+
     const startButton = document.getElementById('start');
     startButton.innerText = 'Start';
     startButton.onclick = startTimer;
 }
-    
+
 
 function resetTimer() {
     stopTimer();
@@ -157,9 +163,9 @@ function setCustomTime() {
     const hours = parseInt(document.getElementById('hours-input').value) || 0;
     const minutes = parseInt(document.getElementById('minutes-input').value) || 0;
     const seconds = parseInt(document.getElementById('seconds-input').value) || 0;
-    
+
     const totalSeconds = (hours * 3600) + (minutes * 60) + seconds;
-    
+
     if (totalSeconds > 0) {
         stopTimer();
         totalTime = totalSeconds;
@@ -173,7 +179,7 @@ let completedTasks = JSON.parse(localStorage.getItem('completedTasks')) || [];
 function addTask() {
     const input = document.getElementById('task-input');
     const taskText = input.value.trim();
-    
+
     if (taskText) {
         tasks.push({ text: taskText, completed: false });
         localStorage.setItem('tasks', JSON.stringify(tasks));
@@ -197,13 +203,13 @@ function deleteTask(index) {
 function updateTaskList() {
     const taskList = document.getElementById('task-list');
     taskList.innerHTML = '';
-    
+
     // Sort tasks: incomplete first, then completed
     const sortedTasks = [...tasks].sort((a, b) => {
         if (a.completed === b.completed) return 0;
         return a.completed ? 1 : -1;
     });
-    
+
     sortedTasks.forEach((task, index) => {
         const li = document.createElement('li');
         li.innerHTML = `
