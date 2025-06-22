@@ -4,6 +4,8 @@ let isRunning = false;
 let endTime = null;
 
 const countdown = document.getElementById("timer");
+let player;
+let isYouTubeReady = false;
 const gifContainer = document.getElementById('gif-container');
 const timerSound = new Audio('./sounds/timer-end.mp3');
 
@@ -56,44 +58,7 @@ function showEndGif() {
     document.getElementById('gif-container').style.display = 'block';
 }
 
-function loadYouTubeAPI() {
-    const tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    const firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-}
 
-function onYouTubeIframeAPIReady() {
-    player = new YT.Player('youtube-player', {
-        height: '0',
-        width: '0',
-        videoId: '8UpGNI1zzAM',
-        playerVars: {
-            'autoplay': 0,
-            'controls': 0,
-            'disablekb': 1,
-            'fs': 0
-        },
-        events: {
-            'onReady': onPlayerReady,
-            'onStateChange': onPlayerStateChange
-        }
-    });
-}
-
-function onPlayerReady(event) {
-    isYouTubeReady = true;
-    // Preload the video
-    player.playVideo();
-    player.pauseVideo();
-    player.seekTo(0);
-}
-
-function onPlayerStateChange(event) {
-    if (event.data == YT.PlayerState.ENDED) {
-        player.seekTo(0);
-    }
-}
 
 function startTimer() {
     if (!isRunning) {
